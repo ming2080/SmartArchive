@@ -18,6 +18,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { NavigationModule } from '../types/archive';
+import { buildCategoryShares, buildReturnReminders } from '../data/dashboardAnalytics';
 
 interface DashboardViewProps {
   onNavigate: (module: NavigationModule) => void;
@@ -129,13 +130,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     return true;
   });
 
-  // 3. 归还提醒 dataset (Recent 2026 dates)
-  const returnReminders = [
-    { id: 'rr-1', title: '《市中心水厂智能化改造工程CAD施工图纸》', borrower: '张建国', dept: '水务质检科', returnDate: '2026-11-03', status: '今日到期' },
-    { id: 'rr-2', title: '《2026年全域水污染防治攻坚战现场督查卷宗》', borrower: '李博文', dept: '生态执法队', returnDate: '2026-11-04', status: '剩余1天' },
-    { id: 'rr-3', title: '《新建市民文化艺术中心地下停车楼消防合格证》', borrower: '王志强', dept: '消防救援支队', returnDate: '2026-11-05', status: '剩余2天' },
-    { id: 'rr-4', title: '《市招商引资重点汽车产业园投资合作协议》', borrower: '赵光远', dept: '经合局招商组', returnDate: '2026-11-01', status: '正常借阅' },
-  ];
+  // 3. 归还提醒：状态由应还日期相对基准日推导，按应还日期升序
+  const returnReminders = buildReturnReminders();
 
   // 4. 公告通知 dataset (Recent 2026 dates)
   const announcements = [
@@ -145,14 +141,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     { id: 'an-4', tag: '培训通知', title: '关于举办全市各单位档案三员保密管理与RFID智慧馆库培训的通知', date: '2026-11-05', isNew: false },
   ];
 
-  // 5. 档案类型占比 dataset
-  const categoryChartData = [
-    { name: '文书档案', pct: '32.68%', value: 32.68, color: 'bg-blue-500', barColor: '#3b82f6' },
-    { name: '照片档案', pct: '25.75%', value: 25.75, color: 'bg-emerald-500', barColor: '#10b981' },
-    { name: '产品科技档案', pct: '16.87%', value: 16.87, color: 'bg-indigo-500', barColor: '#6366f1' },
-    { name: '实物档案', pct: '12.43%', value: 12.43, color: 'bg-amber-500', barColor: '#f59e0b' },
-    { name: '会计档案', pct: '12.26%', value: 12.26, color: 'bg-purple-500', barColor: '#a855f7' },
-  ];
+  // 5. 档案类型占比：百分比由馆藏量计算得出
+  const categoryChartData = buildCategoryShares();
 
   // 6. 档案借阅统计 (Up to current date 2026-11-04)
   const weekTrendData = [
@@ -553,8 +543,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                     <div className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
                       {rem.returnDate}
                     </div>
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      {rem.status}
+                    <span
+                      className={`text-[10px] font-semibold ${
+                        rem.status.kind === 'overdue'
+                          ? 'text-red-600 dark:text-red-400'
+                          : rem.status.kind === 'today'
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-emerald-600 dark:text-emerald-400'
+                      }`}
+                    >
+                      {rem.status.label}
                     </span>
                   </div>
                 </div>

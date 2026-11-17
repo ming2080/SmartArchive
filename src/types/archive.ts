@@ -142,3 +142,33 @@ export interface SystemAuditRecord {
   securityLevel: '普通' | '警告' | '高风险'; // 安全级别
   detail: string;
 }
+
+// 7. 工作台数据驱动 (Dashboard Analytics)
+export type ReturnReminderStatusKind = 'today' | 'upcoming' | 'overdue';
+
+export interface ReturnReminderStatus {
+  kind: ReturnReminderStatusKind;
+  label: string;    // 今日到期 / 剩余N天 / 已逾期N天
+  daysLeft: number; // 相对基准日的剩余天数，逾期为负
+}
+
+export interface DashboardReturnReminder {
+  id: string;
+  title: string;       // 档案题名
+  borrower: string;    // 借阅人
+  dept: string;        // 所属部门
+  returnDate: string;  // 应还日期 (YYYY-MM-DD)
+}
+
+export interface DashboardReturnReminderWithStatus extends DashboardReturnReminder {
+  status: ReturnReminderStatus;
+}
+
+export interface DashboardCategoryShare {
+  name: string;
+  count: number;   // 馆藏量（卷）
+  pct: string;     // 如 32.68%
+  value: number;   // 如 32.68
+  color: string;
+  barColor: string;
+}
