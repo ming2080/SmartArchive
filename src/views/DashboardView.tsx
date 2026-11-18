@@ -18,7 +18,14 @@ import {
   Filter,
 } from 'lucide-react';
 import { NavigationModule } from '../types/archive';
-import { buildCategoryShares, buildReturnReminders } from '../data/dashboardAnalytics';
+import {
+  buildAnnouncements,
+  buildCategoryShares,
+  buildMonthBorrowTrend,
+  buildReturnReminders,
+  buildTodoItems,
+  buildWeekBorrowTrend,
+} from '../data/dashboardAnalytics';
 
 interface DashboardViewProps {
   onNavigate: (module: NavigationModule) => void;
@@ -84,45 +91,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     },
   ];
 
-  // 2. 待办事项 dataset (Recent dates in late Oct / Nov 2026)
-  const todoItems = [
-    {
-      id: 'td-1',
-      type: 'borrow',
-      title: '张建国 申请借阅《市数字化智能交通三期工程竣工验收报告》，请及时处理！',
-      time: '2026-11-03 16:45',
-      shortDate: '11-03',
-      priority: '高优先级',
-      user: '张建国 (审计局)',
-    },
-    {
-      id: 'td-2',
-      type: 'appraisal',
-      title: '《2006年度局机关财政零星报销单据卷宗》待鉴定到期处置，请及时处理！',
-      time: '2026-11-03 14:20',
-      shortDate: '11-03',
-      priority: '中优先级',
-      user: '鉴定委员会',
-    },
-    {
-      id: 'td-3',
-      type: 'borrow',
-      title: '您的借阅申请《2026年第三季度全市国资运营财务决算表》已通过，请及时查询！',
-      time: '2026-11-02 11:15',
-      shortDate: '11-02',
-      priority: '已核准',
-      user: '系统自动化',
-    },
-    {
-      id: 'td-4',
-      type: 'borrow',
-      title: '您的借阅申请《东部新区绿色生态示范区建设规划许可批复正本》已通过，请及时查询！',
-      time: '2026-11-01 09:30',
-      shortDate: '11-01',
-      priority: '已核准',
-      user: '系统自动化',
-    },
-  ];
+  // 2. 待办事项：短日期由待办时间推导
+  const todoItems = buildTodoItems();
 
   const filteredTodos = todoItems.filter((item) => {
     if (todoFilter === 'borrow') return item.type === 'borrow';
@@ -133,34 +103,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   // 3. 归还提醒：状态由应还日期相对基准日推导，按应还日期升序
   const returnReminders = buildReturnReminders();
 
-  // 4. 公告通知 dataset (Recent 2026 dates)
-  const announcements = [
-    { id: 'an-1', tag: '系统维护', title: '关于全国政企数字档案管理系统服务器例行安全维保的通知', date: '2026-11-03', isNew: true },
-    { id: 'an-2', tag: '标准更新', title: '关于全面贯彻执行国家档案局《电子档案四性检测指南》的通知', date: '2026-11-02', isNew: true },
-    { id: 'an-3', tag: '业务通告', title: '关于开展2026年第三季度全市全宗档案归档移交核查的通知', date: '2026-11-05', isNew: false },
-    { id: 'an-4', tag: '培训通知', title: '关于举办全市各单位档案三员保密管理与RFID智慧馆库培训的通知', date: '2026-11-05', isNew: false },
-  ];
+  // 4. 公告通知：“新”标记由发布日期相对基准日推导
+  const announcements = buildAnnouncements();
 
   // 5. 档案类型占比：百分比由馆藏量计算得出
   const categoryChartData = buildCategoryShares();
 
-  // 6. 档案借阅统计 (Up to current date 2026-11-04)
-  const weekTrendData = [
-    { date: '10-29', borrow: 38, returnItem: 42 },
-    { date: '10-30', borrow: 45, returnItem: 38 },
-    { date: '10-31', borrow: 18, returnItem: 12 },
-    { date: '11-01', borrow: 22, returnItem: 28 },
-    { date: '11-02', borrow: 38, returnItem: 32 },
-    { date: '11-03', borrow: 52, returnItem: 48 },
-    { date: '11-04', borrow: 29, returnItem: 31 }, // 今日截止
-  ];
+  // 6. 档案借阅统计 (Up to current date 2026-11-04)：本月趋势由周数据筛选生成
+  const weekTrendData = buildWeekBorrowTrend();
 
-  const monthTrendData = [
-    { date: '11-01', borrow: 22, returnItem: 28 },
-    { date: '11-02', borrow: 38, returnItem: 32 },
-    { date: '11-03', borrow: 52, returnItem: 48 },
-    { date: '11-04', borrow: 29, returnItem: 31 }, // 今日截止
-  ];
+  const monthTrendData = buildMonthBorrowTrend();
 
   const activeTrendData = trendTab === 'week' ? weekTrendData : monthTrendData;
 

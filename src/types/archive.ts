@@ -172,3 +172,27 @@ export interface DashboardCategoryShare {
   color: string;
   barColor: string;
 }
+
+export interface DashboardBorrowTrendPoint {
+  date: string;      // 月-日，如 11-04
+  borrow: number;    // 当日借阅量
+  returnItem: number; // 当日归还量
+}
+
+export interface DashboardAnnouncement {
+  id: string;
+  tag: string;
+  title: string;
+  date: string;   // 发布日期 (YYYY-MM-DD)
+  isNew: boolean; // 由发布日期相对基准日推导，不手写
+}
+
+export interface DashboardTodoItem {
+  id: string;
+  type: 'borrow' | 'appraisal';
+  title: string;
+  time: string;      // 待办时间 (YYYY-MM-DD HH:mm)
+  shortDate: string; // 由 time 推导，如 11-03
+  priority: string;
+  user: string;
+}

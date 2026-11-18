@@ -1,7 +1,10 @@
 import type {
+  DashboardAnnouncement,
+  DashboardBorrowTrendPoint,
   DashboardCategoryShare,
   DashboardReturnReminder,
   DashboardReturnReminderWithStatus,
+  DashboardTodoItem,
   ReturnReminderStatus,
 } from '../types/archive';
 
@@ -68,4 +71,90 @@ export function buildCategoryShares(): DashboardCategoryShare[] {
       pct: `${value.toFixed(2)}%`,
     };
   });
+}
+
+/** 借阅趋势原始数据：近 7 日每日借阅与归还量（截至基准日 11-04） */
+const borrowTrendSources: DashboardBorrowTrendPoint[] = [
+  { date: '10-29', borrow: 38, returnItem: 42 },
+  { date: '10-30', borrow: 45, returnItem: 38 },
+  { date: '10-31', borrow: 18, returnItem: 12 },
+  { date: '11-01', borrow: 22, returnItem: 28 },
+  { date: '11-02', borrow: 38, returnItem: 32 },
+  { date: '11-03', borrow: 52, returnItem: 48 },
+  { date: '11-04', borrow: 29, returnItem: 31 }, // 今日截止
+];
+
+/** 本周趋势：近 7 日原始数据 */
+export function buildWeekBorrowTrend(): DashboardBorrowTrendPoint[] {
+  return [...borrowTrendSources];
+}
+
+/** 本月趋势：由周数据筛选当月 1 日至今，不再手写重复抄写 */
+export function buildMonthBorrowTrend(
+  today: string = DASHBOARD_TODAY,
+): DashboardBorrowTrendPoint[] {
+  const monthStart = today.slice(5, 7) + '-01';
+  return borrowTrendSources.filter((item) => item.date >= monthStart);
+}
+
+/** 公告原始记录：“新”标记不手写，由发布日期相对基准日推导 */
+const announcementSources: Array<Omit<DashboardAnnouncement, 'isNew'>> = [
+  { id: 'an-1', tag: '系统维护', title: '关于全国政企数字档案管理系统服务器例行安全维保的通知', date: '2026-11-03' },
+  { id: 'an-2', tag: '标准更新', title: '关于全面贯彻执行国家档案局《电子档案四性检测指南》的通知', date: '2026-11-02' },
+  { id: 'an-3', tag: '业务通告', title: '关于开展2026年第三季度全市全宗档案归档移交核查的通知', date: '2026-11-05' },
+  { id: 'an-4', tag: '培训通知', title: '关于举办全市各单位档案三员保密管理与RFID智慧馆库培训的通知', date: '2026-11-05' },
+];
+
+/** 生成公告列表：基准日前 2 天内发布（含当日）标为“新”，未来日期不标新 */
+export function buildAnnouncements(
+  today: string = DASHBOARD_TODAY,
+): DashboardAnnouncement[] {
+  return announcementSources.map((item) => {
+    const diff = daysBetween(item.date, today);
+    return { ...item, isNew: diff >= 0 && diff <= 2 };
+  });
+}
+
+/** 待办事项原始记录：短日期不手写，由待办时间推导 */
+const todoItemSources: Array<Omit<DashboardTodoItem, 'shortDate'>> = [
+  {
+    id: 'td-1',
+    type: 'borrow',
+    title: '张建国 申请借阅《市数字化智能交通三期工程竣工验收报告》，请及时处理！',
+    time: '2026-11-03 16:45',
+    priority: '高优先级',
+    user: '张建国 (审计局)',
+  },
+  {
+    id: 'td-2',
+    type: 'appraisal',
+    title: '《2006年度局机关财政零星报销单据卷宗》待鉴定到期处置，请及时处理！',
+    time: '2026-11-03 14:20',
+    priority: '中优先级',
+    user: '鉴定委员会',
+  },
+  {
+    id: 'td-3',
+    type: 'borrow',
+    title: '您的借阅申请《2026年第三季度全市国资运营财务决算表》已通过，请及时查询！',
+    time: '2026-11-02 11:15',
+    priority: '已核准',
+    user: '系统自动化',
+  },
+  {
+    id: 'td-4',
+    type: 'borrow',
+    title: '您的借阅申请《东部新区绿色生态示范区建设规划许可批复正本》已通过，请及时查询！',
+    time: '2026-11-01 09:30',
+    priority: '已核准',
+    user: '系统自动化',
+  },
+];
+
+/** 生成待办事项：短日期由待办时间截取（MM-DD） */
+export function buildTodoItems(): DashboardTodoItem[] {
+  return todoItemSources.map((item) => ({
+    ...item,
+    shortDate: item.time.slice(5, 10),
+  }));
 }
