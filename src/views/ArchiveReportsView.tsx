@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import { NavigationModule } from '../types/archive';
+import { buildRetentionData } from '../data/reportAnalytics';
 
 interface ArchiveReportsViewProps {
   submodule?: 'report_stats' | 'report_annual';
@@ -102,17 +103,7 @@ interface UtilizationRecord {
   satisfactionRate: string; // 满意率
 }
 
-// 5. 历年保管期限情况数据项
-interface RetentionRecord {
-  id: string;
-  year: string;
-  permanentVolume: number;  // 永久保管 (卷)
-  thirtyYearVolume: number; // 30年保管 (卷)
-  tenYearVolume: number;    // 10年保管 (卷)
-  appraisedVolume: number;  // 到期鉴定数
-  disposedVolume: number;   // 合规销毁数
-  extendedVolume: number;   // 延期保管数
-}
+// 历年保管期限情况见 src/data/reportAnalytics.ts：合计与鉴定数由口径推导
 
 // 7大实体库房定义
 const repoList = [
@@ -179,20 +170,6 @@ const mockUtilizationData: UtilizationRecord[] = [
   { id: 'ut-2019', year: '2019', personTime: 8500, borrowVolumes: 5510, digitalViews: 25400, proofCopies: 850, topDept: '成都市交通运输局', satisfactionRate: '98.2%' },
   { id: 'ut-2018', year: '2018', personTime: 8100, borrowVolumes: 5200, digitalViews: 23600, proofCopies: 810, topDept: '成都市商务局', satisfactionRate: '98.0%' },
   { id: 'ut-2017', year: '2017', personTime: 7600, borrowVolumes: 4890, digitalViews: 21800, proofCopies: 760, topDept: '成都市经济和信息化局', satisfactionRate: '97.8%' },
-];
-
-// 真实数据集合 5: 历年保管期限情况 (10条)
-const mockRetentionData: RetentionRecord[] = [
-  { id: 'rt-2026', year: '2026', permanentVolume: 28400, thirtyYearVolume: 14500, tenYearVolume: 5720, appraisedVolume: 1850, disposedVolume: 120, extendedVolume: 1730 },
-  { id: 'rt-2025', year: '2025', permanentVolume: 29800, thirtyYearVolume: 15200, tenYearVolume: 6200, appraisedVolume: 2100, disposedVolume: 180, extendedVolume: 1920 },
-  { id: 'rt-2024', year: '2024', permanentVolume: 28900, thirtyYearVolume: 14800, tenYearVolume: 6100, appraisedVolume: 1980, disposedVolume: 150, extendedVolume: 1830 },
-  { id: 'rt-2023', year: '2023', permanentVolume: 27600, thirtyYearVolume: 14100, tenYearVolume: 5800, appraisedVolume: 1750, disposedVolume: 110, extendedVolume: 1640 },
-  { id: 'rt-2022', year: '2022', permanentVolume: 26400, thirtyYearVolume: 13500, tenYearVolume: 5400, appraisedVolume: 1620, disposedVolume: 90, extendedVolume: 1530 },
-  { id: 'rt-2021', year: '2021', permanentVolume: 25100, thirtyYearVolume: 12900, tenYearVolume: 5200, appraisedVolume: 1510, disposedVolume: 80, extendedVolume: 1430 },
-  { id: 'rt-2020', year: '2020', permanentVolume: 24300, thirtyYearVolume: 12500, tenYearVolume: 5000, appraisedVolume: 1420, disposedVolume: 70, extendedVolume: 1350 },
-  { id: 'rt-2019', year: '2019', permanentVolume: 23100, thirtyYearVolume: 11800, tenYearVolume: 4600, appraisedVolume: 1350, disposedVolume: 60, extendedVolume: 1290 },
-  { id: 'rt-2018', year: '2018', permanentVolume: 22200, thirtyYearVolume: 11400, tenYearVolume: 4500, appraisedVolume: 1280, disposedVolume: 50, extendedVolume: 1230 },
-  { id: 'rt-2017', year: '2017', permanentVolume: 21300, thirtyYearVolume: 10900, tenYearVolume: 4200, appraisedVolume: 1210, disposedVolume: 40, extendedVolume: 1170 },
 ];
 
 // ======================= 档案年报数据接口与真实数据 =======================
@@ -311,7 +288,7 @@ export const ArchiveReportsView: React.FC<ArchiveReportsViewProps> = ({
     }
     // 5. 全宗统计 - 历年保管期限情况
     if (selectedTreeNode === 'all_retention') {
-      return mockRetentionData;
+      return buildRetentionData();
     }
 
     // 分档案库统计分支：按当前选中的库房定制数据
@@ -348,7 +325,7 @@ export const ArchiveReportsView: React.FC<ArchiveReportsViewProps> = ({
       }));
     }
     if (selectedTreeNode === 'repo_retention') {
-      return mockRetentionData.map((d) => ({
+      return buildRetentionData().map((d) => ({
         ...d,
         id: `repo-${selectedSubRepo}-${d.id}`,
         permanentVolume: Math.round(d.permanentVolume * multiplier),

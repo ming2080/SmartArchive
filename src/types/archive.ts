@@ -196,3 +196,16 @@ export interface DashboardTodoItem {
   priority: string;
   user: string;
 }
+
+// 8. 档案报表 - 历年保管期限情况 (Report Analytics)
+export interface RetentionRecord {
+  id: string;
+  year: string;
+  permanentVolume: number;  // 永久保管 (卷)
+  thirtyYearVolume: number; // 30年保管 (卷)
+  tenYearVolume: number;    // 10年保管 (卷)
+  totalVolume: number;      // 当年案卷合计 (卷)，由三期限之和推导
+  appraisedVolume: number;  // 到期鉴定数 (卷)，由销毁数 + 延期数推导
+  disposedVolume: number;   // 合规销毁数 (卷)
+  extendedVolume: number;   // 延期保管数 (卷)
+}
